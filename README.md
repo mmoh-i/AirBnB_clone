@@ -1,2 +1,2 @@
 # AirBnB_clone
-ALX AirBnB clone Priject
+ALX AirBnB clone Project
