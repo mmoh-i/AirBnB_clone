@@ -47,7 +47,7 @@ The console will be a tool to validate this storage engine
 ![d2d06462824fab5846f3](https://user-images.githubusercontent.com/49339501/188128505-4333a5e6-2224-4ab2-a015-e28e55d771d1.png)
 
 Authors
-<Al-Mustapha Ibrahim: ibrahimmusty.me@gmail.com>
+<Al-Mustapha Ibrahim: ibrahimmusty.me@gmail.com>\n
 <Patience IZERE: peshobeat@gmail.com>
 To updated during the course of the project....
  
