@@ -2,6 +2,4 @@
 
 **ALX AirBnB clone Project**
 
-<picture>
-  <img alt="show what you got." src="https://s3.amazonaws.com/alx-intranet.hbtn.io/uploads/medias/2018/6/65f4a1dd9c51265f49d0.png">
-</picture>
+![hbnb](https://user-images.githubusercontent.com/49339501/188122982-1202a4fd-b7d2-40a7-81cd-0fd53e2992b8.png)
