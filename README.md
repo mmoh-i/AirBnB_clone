@@ -5,7 +5,7 @@
 ![hbnb](https://user-images.githubusercontent.com/49339501/188122982-1202a4fd-b7d2-40a7-81cd-0fd53e2992b8.png)
 
 ## Project Description
-The AirBnB is a Project to clone the famous AirBnB site which will inlude some steps for it full stack creation to touch all what we have covered in the ALX SE Programme \viz-a-viz:
+The AirBnB is a Project to clone the famous AirBnB site which will inlude some steps for it full stack creation to touch all what we have covered in the ALX SE Programme<br>viz-a-viz:
 - The console
 - Web satic
 - MySQL storage
@@ -47,7 +47,7 @@ The console will be a tool to validate this storage engine
 ![d2d06462824fab5846f3](https://user-images.githubusercontent.com/49339501/188128505-4333a5e6-2224-4ab2-a015-e28e55d771d1.png)
 
 Authors
-<Al-Mustapha Ibrahim: ibrahimmusty.me@gmail.com>\n
+<Al-Mustapha Ibrahim: ibrahimmusty.me@gmail.com><br>
 <Patience IZERE: peshobeat@gmail.com>
 To updated during the course of the project....
  
