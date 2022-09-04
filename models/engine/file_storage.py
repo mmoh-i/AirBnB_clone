@@ -11,6 +11,21 @@ class FileStorage:
     __file_path = "file.json"
     __objects = {}
 
+    def classes(self):
+        """All classes to b returned in the program"""
+        from models.base_model import BaseModel
+        classes = {"BaseModel": BaseModel}
+        return classes
+
+    def attributes(self):
+        """Returns the valid attributes and their types for classname."""
+        attributes = {
+            "BaseModel":
+                     {"id": str,
+                      "created_at": datetime.datetime,
+                      "updated_at": datetime.datetime},
+                     }
+
     def all(self):
         """Returns __objects dictionary."""
         return FileStorage.__objects
