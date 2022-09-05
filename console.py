@@ -1,262 +1,164 @@
 #!/usr/bin/python3
-""" main program executable """
+""" console """
 
 import cmd
-import json
-from models.base_model import BaseModel
-import models.base_model
-from models.user import User
-from models.place import Place
-from models.state import State
-from models.city import City
+from datetime import datetime
+import models
 from models.amenity import Amenity
+from models.base_model import BaseModel
+from models.city import City
+from models.place import Place
 from models.review import Review
+from models.state import State
+from models.user import User
+import shlex  # for splitting the line along spaces except in double quotes
+
+classes = {"Amenity": Amenity, "BaseModel": BaseModel, "City": City,
+           "Place": Place, "Review": Review, "State": State, "User": User}
 
 
 class HBNBCommand(cmd.Cmd):
-    """ command interpreter """
-
-    prompt = '(hbnb)'
-
-    def emptyline(self):
-        """ override emptyline func """
-        pass
-
-    def onecmd(self, arg):
-        """ overrride onecmd func """
-        return cmd.Cmd.onecmd(self, arg)
-
-    def precmd(self, line):
-        """ parse line for cmd & args """
-        pos_double_quote, pos_period = line.find('"'), line.find('.')
-
-        if pos_period == -1:
-            return line
-
-        if pos_double_quote != -1 and pos_double_quote < pos_period:
-            return line
-
-        new_line = parse(line)
-        return new_line
-
-    def do_quit(self, arg):
-        """ Close """
-        exit()
-
-    def help_quit(self):
-        """ quit help """
-        print("Quit command to exit program\n")
+    """ HBNH console """
+    prompt = '(hbnb) '
 
     def do_EOF(self, arg):
-        """ close """
-        exit()
+        """Exits console"""
+        return True
 
-    def help_EOF(self):
-        """ eof help """
-        print("Quit command to exit program\n")
+    def emptyline(self):
+        """ overwriting the emptyline method """
+        return False
+
+    def do_quit(self, arg):
+        """Quit command to exit the program"""
+        return True
+
+    def _key_value_parser(self, args):
+        """creates a dictionary from a list of strings"""
+        new_dict = {}
+        for arg in args:
+            if "=" in arg:
+                kvp = arg.split('=', 1)
+                key = kvp[0]
+                value = kvp[1]
+                if value[0] == value[-1] == '"':
+                    value = shlex.split(value)[0].replace('_', ' ')
+                else:
+                    try:
+                        value = int(value)
+                    except:
+                        try:
+                            value = float(value)
+                        except:
+                            continue
+                new_dict[key] = value
+        return new_dict
 
     def do_create(self, arg):
-        """ create new instance """
-        newObj = assignCls(arg)
-        if newObj is None:
-            return
-        newObj.save()
-        print(newObj.id)
-
-    def help_create(self):
-        """ create help """
-        print("Create an instance of a class")
-        print("Usage: create <class name>\n")
+        """Creates a new instance of a class"""
+        args = arg.split()
+        if len(args) == 0:
+            print("** class name missing **")
+            return False
+        if args[0] in classes:
+            new_dict = self._key_value_parser(args[1:])
+            instance = classes[args[0]](**new_dict)
+        else:
+            print("** class doesn't exist **")
+            return False
+        print(instance.id)
+        instance.save()
 
     def do_show(self, arg):
-        """ prints string of an instance """
-        name = condChk(arg)
-        if name is None:
-            return
-
-        try:
-            with open('file.json', 'r') as f:
-                objDict = json.load(f)
-        except:
-            return
-
-        if name not in objDict:
-            print("** no instance found **")
-            return
-        kwarg = objDict[name]
-        obj = assignCls(arg, kwarg)
-        print(obj)
-        del(obj)
-
-    def help_show(self):
-        """ show help """
-        pass
+        """Prints an instance as a string based on the class and id"""
+        args = shlex.split(arg)
+        if len(args) == 0:
+            print("** class name missing **")
+            return False
+        if args[0] in classes:
+            if len(args) > 1:
+                key = args[0] + "." + args[1]
+                if key in models.storage.all():
+                    print(models.storage.all()[key])
+                else:
+                    print("** no instance found **")
+            else:
+                print("** instance id missing **")
+        else:
+            print("** class doesn't exist **")
 
     def do_destroy(self, arg):
-        """ remove obj from JSON File """
-        name = condChk(arg)
-        if name is None:
-            return
-        try:
-            with open('file.json', 'r') as f:
-                objDict = json.load(f)
-        except:
-            return
-
-        if name not in objDict:
-            print("** no instance found **")
-            return
-        objDict.pop(name)
-        with open('file.json', 'w') as f:
-            objDict = json.dump(objDict, f, sort_keys=True, indent=4)
-
-    def help_destroy(self):
-        """ help destroy """
-        pass
+        """Deletes an instance based on the class and id"""
+        args = shlex.split(arg)
+        if len(args) == 0:
+            print("** class name missing **")
+        elif args[0] in classes:
+            if len(args) > 1:
+                key = args[0] + "." + args[1]
+                if key in models.storage.all():
+                    models.storage.all().pop(key)
+                    models.storage.save()
+                else:
+                    print("** no instance found **")
+            else:
+                print("** instance id missing **")
+        else:
+            print("** class doesn't exist **")
 
     def do_all(self, arg):
-        """ show all objects """
-        clsList = [
-            'User', 'State', 'City',
-            'Amenity', 'Place',
-            'Review', 'BaseModel'
-        ]
-        empty = False
-        if arg == "":
-            empty = True
-        elif arg not in clsList:
+        """Prints string representations of instances"""
+        args = shlex.split(arg)
+        obj_list = []
+        if len(args) == 0:
+            obj_dict = models.storage.all()
+        elif args[0] in classes:
+            obj_dict = models.storage.all(classes[args[0]])
+        else:
             print("** class doesn't exist **")
-            return
-        allList = []
-        try:
-            with open('file.json', 'r') as f:
-                objDict = json.load(f)
-        except:
-            return
-
-        for key in objDict:
-            obj_class = objDict[key]["__class__"]
-            if obj_class != arg \
-                    and empty is False:
-                continue
-            obj = assignCls(obj_class, objDict[key])
-            allList.append(str(obj))
-            del(obj)
-        print(allList)
-
-    def help_all(self):
-        """ show help """
-        pass
+            return False
+        for key in obj_dict:
+            obj_list.append(str(obj_dict[key]))
+        print("[", end="")
+        print(", ".join(obj_list), end="")
+        print("]")
 
     def do_update(self, arg):
-        """ updates an object """
-        name = condChk(arg)
-        if name is None:
-            return
-        with open('file.json', 'r') as f:
-            objDict = json.load(f)
-        if name not in objDict:
-            print("** no instance found **")
-            return
-        updateObj = arg.split(" ")
-        length = len(updateObj)
-        if length < 3:
-            print("** attribute name missing **")
-            return
-        if length < 4:
-            print("** value missing **")
-            return
-        attributeName = updateObj[2]
-
-        updateObj.pop(2)
-        updateObj.pop(1)
-        class_name = updateObj.pop(0)
-        value = ' '.join(updateObj).replace('"', '')
-
-        newObj = assignCls(class_name, objDict[name])
-        setattr(newObj, attributeName, value)
-        newObj.save()
-        del newObj
-
-    def help_update(self):
-        """ update help """
-        pass
-
-
-def assignCls(args, kwargs={}):
-    """assigning class obj """
-
-    arg_list = args.split(" ")
-    arg = arg_list[0]
-
-    if not arg:
-        print("** class name missing **")
-        return None
-    clsList = [
-        'User', 'State', 'City',
-        'Amenity', 'Place',
-        'Review', 'BaseModel'
-    ]
-    if arg == 'User':
-        return User(**kwargs)
-    if arg == 'State':
-        return State(**kwargs)
-    if arg == 'City':
-        return City(**kwargs)
-    if arg == 'Amenity':
-        return Amenity(**kwargs)
-    if arg == 'Place':
-        return Place(**kwargs)
-    if arg == 'Review':
-        return Review(**kwargs)
-    if arg == 'BaseModel':
-        return BaseModel(**kwargs)
-    if arg not in clsList:
-        print("** class doesn't exist **")
-        return None
-
-
-def condChk(arg):
-    """ checking on conditionals for obj """
-    clsList = [
-        'User', 'State', 'City',
-        'Amenity', 'Place',
-        'Review', 'BaseModel'
-    ]
-    argList = arg.split(" ")
-    length = len(argList)
-    if argList == [""]:
-        print("** class name missing **")
-        return None
-    if argList[0] not in clsList:
-        print("** class doesn't exist **")
-        return None
-    if length < 2:
-        print("** instance id missing **")
-        return None
-    return argList[0] + "." + argList[1]
-
-
-def parse(line):
-    """ parse line for cmd & args """
-    cmd_list = line.split('.')
-    class_name = cmd_list[0]
-    cmd_list = cmd_list[1].split('(')
-    cmd = cmd_list[0]
-    arg = cmd_list[1][:-1]
-
-    arg_list = arg.split(', ')
-    arg_list[0] = arg_list[0].replace('"', '')
-    try:
-        arg_list[1] = arg_list[1].replace('"', '')
-    except:
-        pass
-
-    arg = " ".join(arg_list)
-    cmd_list = [cmd, class_name, arg]
-    new_line = " ".join(cmd_list)
-
-    return (new_line)
+        """Update an instance based on the class name, id, attribute & value"""
+        args = shlex.split(arg)
+        integers = ["number_rooms", "number_bathrooms", "max_guest",
+                    "price_by_night"]
+        floats = ["latitude", "longitude"]
+        if len(args) == 0:
+            print("** class name missing **")
+        elif args[0] in classes:
+            if len(args) > 1:
+                k = args[0] + "." + args[1]
+                if k in models.storage.all():
+                    if len(args) > 2:
+                        if len(args) > 3:
+                            if args[0] == "Place":
+                                if args[2] in integers:
+                                    try:
+                                        args[3] = int(args[3])
+                                    except:
+                                        args[3] = 0
+                                elif args[2] in floats:
+                                    try:
+                                        args[3] = float(args[3])
+                                    except:
+                                        args[3] = 0.0
+                            setattr(models.storage.all()[k], args[2], args[3])
+                            models.storage.all()[k].save()
+                        else:
+                            print("** value missing **")
+                    else:
+                        print("** attribute name missing **")
+                else:
+                    print("** no instance found **")
+            else:
+                print("** instance id missing **")
+        else:
+            print("** class doesn't exist **")
 
 if __name__ == '__main__':
     HBNBCommand().cmdloop()
