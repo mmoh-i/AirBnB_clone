@@ -54,6 +54,19 @@ class HBNBCommand(cmd.Cmd):
                 new_dict[key] = value
         return new_dict
 
+    def do_count(self, arg):
+        """Counts instances of a class """
+        args = arg.split()
+        if len(args) == 0:
+            print("** class name missing **")
+        elif args[0] not in storage.classes():
+            print("** class dosen't exist **")
+        else:
+            match = [
+                i for i in storage.all() if i.startswith(
+                    args[0] + '.')]
+            print(len(matches)
+
     def do_create(self, arg):
         """Creates a new instance of a class"""
         args = arg.split()
